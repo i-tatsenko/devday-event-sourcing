@@ -51,8 +51,12 @@ export abstract class EsEntity<T extends EsEvent<object>> {
     }
 }
 
+export interface ProjectionUpdater {
+    onEvent(event: EsEvent<object>): void;
+}
+
 export class EventJournal {
-    constructor(private readonly db: DatabaseSync) {
+    constructor(private readonly db: DatabaseSync, private readonly projectionUpdater: ProjectionUpdater) {
     }
 
     async save(entity: EsEntity<EsEvent<object>>) {
@@ -60,14 +64,20 @@ export class EventJournal {
                                       VALUES (?, ?, ?, ?, ?, ?)`);
         entity.drainUncommitedEventsTo(event => {
             stmt.run(event.entityId, JSON.stringify(event.payload), event.userId, event.eventType, event.revision, event.createdAt)
+            this.projectionUpdater.onEvent(event)
         })
     }
 
+    private  restoreEventFromDb<EventType extends EsEvent<object>>(event: unknown) {
+        const typedEvent = event as EventType;
+        return {
+            ...typedEvent,
+            payload: JSON.parse(String(typedEvent.payload))
+        }
+    }
+
     private applyEvents <EventType extends EsEvent<object>, T extends EsEntity<EventType>>(entity: T, events: EventType[]) {
-        events.forEach(({payload, ...event}) => entity.handle({
-            ...event,
-            payload: JSON.parse(String(payload))
-        } as EventType))
+        events.forEach((event) => entity.handle(this.restoreEventFromDb(event)));
         return entity;
     }
 
@@ -95,5 +105,11 @@ export class EventJournal {
         }
 
         return entities;
+    }
+
+    async *allEvents() {
+        for (const row of this.db.prepare("SELECT * FROM event_journal").all()) {
+            yield this.restoreEventFromDb(row)
+        }
     }
 }

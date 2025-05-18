@@ -6,7 +6,7 @@ import {createEsRepo} from "@/be/es/repository";
 const db = new DatabaseSync('./db.sqlite');
 
 const classicRepository = createClassicRepo(db)
-const esRepository = createEsRepo(db)
+const esRepository = await createEsRepo(db)
 
 export type RepositoryType = 'classic' | 'es'
 
