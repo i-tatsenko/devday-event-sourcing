@@ -1,14 +1,19 @@
 import {DatabaseSync} from "node:sqlite";
 import {createClassicRepo} from "@/be/classic-repository";
 import {AppointmentRepository} from "@/domain/appointment";
+import {createEsRepo} from "@/be/es/repository";
 
 const db = new DatabaseSync('./db.sqlite');
 
 const classicRepository = createClassicRepo(db)
+const esRepository = createEsRepo(db)
 
-export type RepositoryType = 'classic'
+export type RepositoryType = 'classic' | 'es'
 
 export const getRepository = (type: RepositoryType): AppointmentRepository => {
+    if (type === 'es') {
+        return esRepository
+    }
     return classicRepository
 }
 
@@ -43,3 +48,4 @@ const createTestData = async (repo: AppointmentRepository) => {
 }
 
 createTestData(classicRepository)
+createTestData(esRepository)
