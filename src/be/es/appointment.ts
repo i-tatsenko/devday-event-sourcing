@@ -28,6 +28,16 @@ export type AppointmentEsEvent =
     | AppointmentDateChangedEsEvent
     | AppointmentCreatedEsEvent
 
+export const describeEvent = (event: AppointmentEsEvent) => {
+    switch (event.eventType) {
+        case 'AppointmentCreated':
+            return `created appointment for ${event.payload.petName} at ${format(event.payload.dateTime)} with ${event.payload.doctorId}`
+        case 'AppointmentStatusChanged':
+            return `changed status to ${event.payload.status}`
+        case 'AppointmentDateChanged':
+            return `changed date to ${format(event.payload.dateTime)}`
+    }
+}
 
 export class AppointmentEsEntity extends EsEntity<AppointmentEsEvent> implements AppointmentEntity {
     dateTime = new Date()

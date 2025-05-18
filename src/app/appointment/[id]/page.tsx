@@ -2,6 +2,7 @@ import {findAppointment} from "@/actions/findAppointment";
 import {DefaultSearchParams} from "@/app/definition";
 import {format} from "@/date-util";
 import {AppointmentBreadcrumbs} from "@/app/appointment/[id]/AppointmentBreadcrumbs";
+import {AuditLog} from "@/app/appointment/[id]/AuditLog";
 
 export default async function AppointmentDetailsPage({params, searchParams}: {
     params: Promise<{ id: string }>,
@@ -25,6 +26,7 @@ export default async function AppointmentDetailsPage({params, searchParams}: {
                 <div><b>Status:</b> {appointment.status}</div>
             </div>
         </div>
+        <AuditLog appointmentId={appointmentId} repo={repo}/>
 
     </div>
 }

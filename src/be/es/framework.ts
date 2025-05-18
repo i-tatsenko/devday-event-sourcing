@@ -112,4 +112,8 @@ export class EventJournal {
             yield this.restoreEventFromDb(row)
         }
     }
+
+    async findEventsForEntityId(entityId: string) {
+        return this.db.prepare(`SELECT * FROM event_journal WHERE entityId = ? ORDER BY revision`).all(entityId).map(this.restoreEventFromDb);
+    }
 }

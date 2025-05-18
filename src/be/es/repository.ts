@@ -1,7 +1,7 @@
 import {DatabaseSync} from "node:sqlite";
-import {AppointmentCreatedEsEvent, AppointmentEsEntity} from "@/be/es/appointment";
+import {AppointmentCreatedEsEvent, AppointmentEsEntity, AppointmentEsEvent, describeEvent} from "@/be/es/appointment";
 import {EsEvent, EventJournal} from "@/be/es/framework";
-import {AppointmentRepository, CreateAppointmentDto} from "@/domain/appointment";
+import {AppointmentRepository, AuditLogEntry, CreateAppointmentDto} from "@/domain/appointment";
 import {toDto} from "@/data-util";
 import AsyncIterator = NodeJS.AsyncIterator;
 
@@ -72,6 +72,17 @@ class AppointmentEsRepository implements AppointmentRepository {
     async userAppointments(userId: string) {
         return this.restoreAllAppointments(await this.appointmentDiscoveryProjection.userAppointments(userId));
     }
+
+    async auditLog(appointmentId: string): Promise<AuditLogEntry[]> {
+        const events = await this.eventJournal.findEventsForEntityId(appointmentId);
+        return events.map(event => ({
+            dateTime: new Date(event.createdAt),
+            userId: event.userId,
+            description: describeEvent(event as AppointmentEsEvent),
+        }))
+    }
+
+
 }
 
 export async function createEsRepo(db: DatabaseSync): Promise<AppointmentRepository> {

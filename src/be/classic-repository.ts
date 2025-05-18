@@ -2,7 +2,7 @@ import {DatabaseSync} from "node:sqlite";
 import {
     AppointmentEntity,
     AppointmentRepository,
-    AppointmentStatus,
+    AppointmentStatus, AuditLogEntry,
     CreateAppointmentDto,
 } from "@/domain/appointment";
 import {format} from "@/date-util";
@@ -80,6 +80,10 @@ export class ClassicCrudRepository {
 
     async findById(id: string) {
         return mapFromDb(this.db.prepare('SELECT * FROM appointment WHERE id = ?').get(id))
+    }
+
+    async auditLog(): Promise<AuditLogEntry[]> {
+        return [];
     }
 }
 

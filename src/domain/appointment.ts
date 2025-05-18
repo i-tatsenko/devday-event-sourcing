@@ -20,6 +20,12 @@ export interface AppointmentDto extends Pick<AppointmentEntity, "id" | "dateTime
 
 export type CreateAppointmentDto = Pick<AppointmentEntity, 'dateTime' | 'ownerId' | 'petName' | 'doctorId'>;
 
+export interface AuditLogEntry {
+    dateTime: Date;
+    userId: string;
+    description: string;
+}
+
 export interface AppointmentRepository {
     findById(id: string): Promise<AppointmentEntity | undefined>;
 
@@ -30,4 +36,6 @@ export interface AppointmentRepository {
     save(appointment: AppointmentEntity): Promise<AppointmentEntity>;
 
     create(appointment: CreateAppointmentDto, userId: string): Promise<AppointmentEntity>;
+
+    auditLog(appointmentId: string): Promise<AuditLogEntry[]>;
 }
